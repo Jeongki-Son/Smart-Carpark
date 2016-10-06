@@ -1,0 +1,163 @@
+
+carpark.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00000088  00000000  00000000  00000054  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .debug_aranges 00000020  00000000  00000000  000000dc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  2 .debug_pubnames 0000001b  00000000  00000000  000000fc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  3 .debug_info   00000162  00000000  00000000  00000117  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  4 .debug_abbrev 000000ef  00000000  00000000  00000279  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_line   00000188  00000000  00000000  00000368  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_frame  00000020  00000000  00000000  000004f0  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_str    000000df  00000000  00000000  00000510  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_loc    00000018  00000000  00000000  000005ef  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	12 c0       	rjmp	.+36     	; 0x26 <__ctors_end>
+   2:	19 c0       	rjmp	.+50     	; 0x36 <__bad_interrupt>
+   4:	18 c0       	rjmp	.+48     	; 0x36 <__bad_interrupt>
+   6:	17 c0       	rjmp	.+46     	; 0x36 <__bad_interrupt>
+   8:	16 c0       	rjmp	.+44     	; 0x36 <__bad_interrupt>
+   a:	15 c0       	rjmp	.+42     	; 0x36 <__bad_interrupt>
+   c:	14 c0       	rjmp	.+40     	; 0x36 <__bad_interrupt>
+   e:	13 c0       	rjmp	.+38     	; 0x36 <__bad_interrupt>
+  10:	12 c0       	rjmp	.+36     	; 0x36 <__bad_interrupt>
+  12:	11 c0       	rjmp	.+34     	; 0x36 <__bad_interrupt>
+  14:	10 c0       	rjmp	.+32     	; 0x36 <__bad_interrupt>
+  16:	0f c0       	rjmp	.+30     	; 0x36 <__bad_interrupt>
+  18:	0e c0       	rjmp	.+28     	; 0x36 <__bad_interrupt>
+  1a:	0d c0       	rjmp	.+26     	; 0x36 <__bad_interrupt>
+  1c:	0c c0       	rjmp	.+24     	; 0x36 <__bad_interrupt>
+  1e:	0b c0       	rjmp	.+22     	; 0x36 <__bad_interrupt>
+  20:	0a c0       	rjmp	.+20     	; 0x36 <__bad_interrupt>
+  22:	09 c0       	rjmp	.+18     	; 0x36 <__bad_interrupt>
+  24:	08 c0       	rjmp	.+16     	; 0x36 <__bad_interrupt>
+
+00000026 <__ctors_end>:
+  26:	11 24       	eor	r1, r1
+  28:	1f be       	out	0x3f, r1	; 63
+  2a:	cf e5       	ldi	r28, 0x5F	; 95
+  2c:	d4 e0       	ldi	r29, 0x04	; 4
+  2e:	de bf       	out	0x3e, r29	; 62
+  30:	cd bf       	out	0x3d, r28	; 61
+  32:	02 d0       	rcall	.+4      	; 0x38 <main>
+  34:	27 c0       	rjmp	.+78     	; 0x84 <_exit>
+
+00000036 <__bad_interrupt>:
+  36:	e4 cf       	rjmp	.-56     	; 0x0 <__vectors>
+
+00000038 <main>:
+	char data;
+	char arr[4] = "000";
+	
+	//pin setting
+
+	DDRB = (DDRB |= (1<<PB0));
+  38:	b8 9a       	sbi	0x17, 0	; 23
+  3a:	87 b3       	in	r24, 0x17	; 23
+  3c:	87 bb       	out	0x17, r24	; 23
+	DDRC = (DDRC |= (1<<PC5));
+  3e:	a5 9a       	sbi	0x14, 5	; 20
+  40:	84 b3       	in	r24, 0x14	; 20
+  42:	84 bb       	out	0x14, r24	; 20
+	PORTB = (PORTB | (1<<PORTB0));
+  44:	c0 9a       	sbi	0x18, 0	; 24
+  46:	80 e1       	ldi	r24, 0x10	; 16
+  48:	97 e2       	ldi	r25, 0x27	; 39
+    milliseconds can be achieved.
+ */
+void
+_delay_loop_2(uint16_t __count)
+{
+	__asm__ volatile (
+  4a:	29 e1       	ldi	r18, 0x19	; 25
+  4c:	30 e0       	ldi	r19, 0x00	; 0
+  4e:	f9 01       	movw	r30, r18
+  50:	31 97       	sbiw	r30, 0x01	; 1
+  52:	f1 f7       	brne	.-4      	; 0x50 <__SREG__+0x11>
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+		{
+			// wait 1/10 ms
+			_delay_loop_2(((F_CPU) / 4e3) / 10);
+			__ticks --;
+  54:	01 97       	sbiw	r24, 0x01	; 1
+		__ticks = 1;
+	else if (__tmp > 65535)
+	{
+		//	__ticks = requested delay in 1/10 ms
+		__ticks = (uint16_t) (__ms * 10.0);
+		while(__ticks)
+  56:	d9 f7       	brne	.-10     	; 0x4e <__SREG__+0xf>
+	_delay_ms(1000);
+	PORTB = (PORTB & ~(1<<PORTB0));
+  58:	c0 98       	cbi	0x18, 0	; 24
+	PORTC = (PORTC | (1<<PORTC5));
+  5a:	ad 9a       	sbi	0x15, 5	; 21
+	
+	//interrupt
+	
+	GICR |= (1<<INT0);
+  5c:	8b b7       	in	r24, 0x3b	; 59
+  5e:	80 64       	ori	r24, 0x40	; 64
+  60:	8b bf       	out	0x3b, r24	; 59
+	MCUCR = (0<<ISC00) | (0<<ISC01); //INT0
+  62:	15 be       	out	0x35, r1	; 53
+	sei();
+  64:	78 94       	sei
+	
+
+	//ADC
+
+	ADMUX = 0b01000001; //((0<<REFS1) | (0<<REFS0)) | ((0<<MUX3) | (0<<MUX2) | (0<<MUX1) | (1<<MUX0)) <-- AVcc with external capacitor at AREFpin & ADC1;
+  66:	81 e4       	ldi	r24, 0x41	; 65
+  68:	87 b9       	out	0x07, r24	; 7
+	ADCSRA = 0b10100111; //ADC Enable, Free Running Mode, Prescaler 128
+  6a:	87 ea       	ldi	r24, 0xA7	; 167
+  6c:	86 b9       	out	0x06, r24	; 6
+	sbi(ADCSRA, ADSC); // ADC START
+  6e:	36 9a       	sbi	0x06, 6	; 6
+
+	while(1) {
+		ADCResult = ADC;
+		if (ADCResult > 300) {
+			PORTB = 0x01;
+  70:	21 e0       	ldi	r18, 0x01	; 1
+	ADMUX = 0b01000001; //((0<<REFS1) | (0<<REFS0)) | ((0<<MUX3) | (0<<MUX2) | (0<<MUX1) | (1<<MUX0)) <-- AVcc with external capacitor at AREFpin & ADC1;
+	ADCSRA = 0b10100111; //ADC Enable, Free Running Mode, Prescaler 128
+	sbi(ADCSRA, ADSC); // ADC START
+
+	while(1) {
+		ADCResult = ADC;
+  72:	84 b1       	in	r24, 0x04	; 4
+  74:	95 b1       	in	r25, 0x05	; 5
+		if (ADCResult > 300) {
+  76:	8d 52       	subi	r24, 0x2D	; 45
+  78:	91 40       	sbci	r25, 0x01	; 1
+  7a:	10 f0       	brcs	.+4      	; 0x80 <__SREG__+0x41>
+			PORTB = 0x01;
+  7c:	28 bb       	out	0x18, r18	; 24
+  7e:	f9 cf       	rjmp	.-14     	; 0x72 <__SREG__+0x33>
+		}
+		else {
+			PORTB = 0x00;
+  80:	18 ba       	out	0x18, r1	; 24
+  82:	f7 cf       	rjmp	.-18     	; 0x72 <__SREG__+0x33>
+
+00000084 <_exit>:
+  84:	f8 94       	cli
+
+00000086 <__stop_program>:
+  86:	ff cf       	rjmp	.-2      	; 0x86 <__stop_program>

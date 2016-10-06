@@ -1,6 +1,7 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <avr/sleep.h>
 
 #define F_CPU 16000000uL
 #define sbi(sfr,bit) (_SFR_BYTE(sfr)|=_BV(bit))
@@ -20,12 +21,10 @@ int main (void)
 	PORTB = (PORTB & ~(1<<PORTB0));
 	PORTC = (PORTC | (1<<PORTC5));
 	
-	//interrupt
+	//sleep setting
 	
-	GICR |= (1<<INT0);
-	MCUCR = (0<<ISC00) | (0<<ISC01); //INT0
-	sei();
-	
+	MCUCR = (1<<SE) | (1<<SM1);
+
 
 	//ADC
 
@@ -34,13 +33,17 @@ int main (void)
 	sbi(ADCSRA, ADSC); // ADC START
 
 	while(1) {
+		sleep_disable();
 		ADCResult = ADC;
 		if (ADCResult > 300) {
 			PORTB = 0x01;
 		}
-		else {
+		else if (ADCResult < 300) {
 			PORTB = 0x00;
 		}
+		
+		_delay_ms(2000);
+		sleep_cpu();
 	}
 	return 0;
 }
